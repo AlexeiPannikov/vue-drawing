@@ -12,24 +12,24 @@ export class PenTool {
     drawWidth: number = 2
     isDrawing: boolean = false
 
-    start(e: MouseEvent | Touch) {
+    start(e: MouseEvent | TouchEvent) {
         this.isDrawing = true
         this.ctx.beginPath()
         if (e instanceof MouseEvent) {
             this.ctx.moveTo(e.clientX - this.canvas.offsetLeft, e.clientY - this.canvas.offsetTop)
         }
         if (e instanceof  TouchEvent) {
-            this.ctx.moveTo(e.clientX - this.canvas.offsetLeft, e.clientY - this.canvas.offsetTop)
+            this.ctx.moveTo(e.changedTouches[0].clientX - this.canvas.offsetLeft, e.changedTouches[0].clientY - this.canvas.offsetTop)
         }
     }
 
-    draw(e: MouseEvent | Touch) {
+    draw(e: MouseEvent | TouchEvent) {
         if (!this.isDrawing) return
         if (e instanceof MouseEvent) {
             this.ctx.lineTo(e.clientX - this.canvas.offsetLeft, e.clientY - this.canvas.offsetTop)
         }
         if (e instanceof  TouchEvent) {
-            this.ctx.lineTo(e.clientX - this.canvas.offsetLeft, e.clientY - this.canvas.offsetTop)
+            this.ctx.lineTo(e.changedTouches[0].clientX - this.canvas.offsetLeft, e.changedTouches[0].clientY - this.canvas.offsetTop)
         }
         this.ctx.strokeStyle = this.color
         this.ctx.lineWidth = this.drawWidth
@@ -38,8 +38,12 @@ export class PenTool {
         this.ctx.stroke()
     }
 
-    end() {
-        this.isDrawing = false
+    stop() {
+        if (this.isDrawing) {
+            this.ctx.stroke()
+            this.ctx.closePath()
+            this.isDrawing = false
+        }
     }
 
     constructor(id: number, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, color?: string) {
