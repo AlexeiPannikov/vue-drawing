@@ -48,7 +48,7 @@ export class CanvasModel {
         }
     }
 
-    stop(e: MouseEvent | Touch) {
+    stop(e: MouseEvent | TouchEvent) {
         if (this.selectedTool instanceof PenTool) {
             this.selectedTool.stop()
         }
