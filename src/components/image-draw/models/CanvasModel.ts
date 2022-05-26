@@ -2,8 +2,8 @@ import {Shape} from "./Shape";
 import {PenTool} from "./PenTool";
 import {Tools} from "./Tools";
 import {ImageModel} from "./ImageModel";
-
-type Tool = PenTool
+// @ts-ignore
+import {EasyC} from  "./../easyc"
 
 export class CanvasModel {
     canvas: HTMLCanvasElement = null

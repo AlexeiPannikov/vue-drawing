@@ -1,6 +1,6 @@
 //version 1.1.1 not premium
 
-function EasyC(canvas, objects) {
+export function EasyC(canvas, objects) {
   this.canvas = null;
   this.objects = [];
   this.resource = [];
