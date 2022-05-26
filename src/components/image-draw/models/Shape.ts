@@ -1,5 +1,10 @@
 export class Shape {
 
-    constructor() {
+
+
+    constructor(obj?: Partial<Shape>) {
+        if (obj) {
+            Object.assign(this, obj)
+        }
     }
 }
