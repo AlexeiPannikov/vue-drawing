@@ -7,7 +7,13 @@
     <div class="toolbar flex-grow-0 ml-8">
 
       <div class="tool-wrap">
-        <div class="tool-icon circle"></div>
+        <div class="tool-icon circle" @click="selectCircle" :class="{selected: isSelectedCircle}"></div>
+        <div class="color-box" :style="{backgroundColor: circleColor}"
+             @click="isOpenCircleColorPicker = true" v-click-outside="() => {isOpenCircleColorPicker = false}">
+          <div class="color-picker-wrap position-absolute" v-show="isOpenCircleColorPicker">
+            <v-color-picker v-model="circleColor" mode="hex"></v-color-picker>
+          </div>
+        </div>
       </div>
 
       <div class="tool-wrap mt-4">
@@ -19,8 +25,8 @@
           <v-icon color="white">mdi-pen</v-icon>
         </div>
         <div class="color-box" :style="{backgroundColor: penColor}"
-             @click="isOpenLineColorPicker = true" v-click-outside="() => {isOpenLineColorPicker = false}">
-          <div class="color-picker-wrap position-absolute" v-show="isOpenLineColorPicker">
+             @click="isOpenPenColorPicker = true" v-click-outside="() => {isOpenPenColorPicker = false}">
+          <div class="color-picker-wrap position-absolute" v-show="isOpenPenColorPicker">
             <v-color-picker v-model="penColor" mode="hex"></v-color-picker>
           </div>
         </div>
@@ -44,7 +50,9 @@ import Shirt from "./../../assets/shirt.png"
 
 const canvasWrap = ref(null)
 const canvas = ref<HTMLCanvasElement>(null)
-const isOpenLineColorPicker = ref(false)
+
+const isOpenPenColorPicker = ref(false)
+const isOpenCircleColorPicker = ref(false)
 
 let sheet = reactive<CanvasModel>(new CanvasModel(canvas.value))
 
@@ -79,7 +87,7 @@ onMounted(() => {
 
   document.addEventListener('mouseup', (e) => sheet.stop(e))
   document.addEventListener('touchend', (e) => sheet.stop(e))
-  document.addEventListener('mouseout', (e) => sheet.stop(e))
+  canvas.value.addEventListener('mouseout', (e) => sheet.stop(e))
 })
 
 const selectPen = () => {
@@ -87,12 +95,23 @@ const selectPen = () => {
   isSelectedPen.value = sheet.tools.pen.isSelected
 }
 
+const selectCircle = () => {
+  sheet.selectTool('circle')
+  isSelectedCircle.value = sheet.tools.circle.isSelected
+}
+
 const isSelectedPen = ref(false)
+const isSelectedCircle = ref(false)
 
 const penColor = ref(sheet?.tools.pen.color)
+const circleColor = ref(sheet?.tools.circle.color)
 
 watch(penColor, () => {
   sheet.tools.pen.color = penColor.value
+})
+
+watch(circleColor, () => {
+  sheet.tools.circle.shape.stroke.fill = circleColor.value
 })
 </script>
 

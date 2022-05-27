@@ -3,7 +3,8 @@ import {PenTool} from "./PenTool";
 import {Tools} from "./Tools";
 import {ImageModel} from "./ImageModel";
 // @ts-ignore
-import {EasyC} from  "./../easyc"
+import {EasyC} from "./../easyc"
+import {CircleTool} from "./CircleTool";
 
 export class CanvasModel {
     canvas: HTMLCanvasElement = null
@@ -32,7 +33,7 @@ export class CanvasModel {
 
     setCanvasSize(width: number, height: number) {
         this.canvas.width = width
-        this.canvas.height =height
+        this.canvas.height = height
         this.easyC.draw()
     }
 
@@ -40,11 +41,23 @@ export class CanvasModel {
         if (this.selectedTool instanceof PenTool) {
             this.selectedTool.start(e)
         }
+        if (this.selectedTool instanceof CircleTool) {
+            this.easyC.objects.push(this.selectedTool.shape)
+            this.selectedTool.start(e)
+            console.log(this.easyC.objects)
+        }
+        this.easyC.draw()
     }
 
     draw(e: MouseEvent | TouchEvent) {
         if (this.selectedTool instanceof PenTool) {
             this.selectedTool.draw(e)
+        }
+        if (this.selectedTool instanceof CircleTool) {
+            const isSuccess = this.selectedTool.draw(e)
+            if (isSuccess) {
+                this.easyC.draw()
+            }
         }
     }
 
@@ -52,9 +65,17 @@ export class CanvasModel {
         if (this.selectedTool instanceof PenTool) {
             this.selectedTool.stop()
         }
-        if ((e as Event).type !== 'mouseout' && this.selectedTool) {
-            this.restore.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height))
-            console.log(this.restore)
+        if (this.selectedTool instanceof CircleTool) {
+            if (this.selectedTool.isDrawing) {
+                this.easyC.objects.push(JSON.parse(JSON.stringify(this.easyC.objects.splice(-1, 1)[0])))
+            }
+            if (this.easyC.objects[this.easyC.objects.length - 1].radius <= 0) {
+                this.easyC.objects.pop()
+            }
+            this.selectedTool.stop()
+        }
+        if ((e as Event).type !== 'mouseout' && this.selectedTool && this.canvas.contains((e as any).target)) {
+            this.saveInRestore()
         }
     }
 
