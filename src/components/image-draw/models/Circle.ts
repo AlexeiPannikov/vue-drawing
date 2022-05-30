@@ -30,7 +30,7 @@ export class Circle extends Tool {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.isMouseDown) {
-            let radius = e.pageX - this.startX
+            let radius = e.pageX - (e.target as any).offsetLeft - this.startX
             if (radius <= 0) {
                 radius = Math.abs(radius)
             }

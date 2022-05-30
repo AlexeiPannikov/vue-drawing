@@ -13,6 +13,16 @@ export class Sheet {
         this.pen = new Pen(canvas)
     }
 
+    get selectedToolName() {
+        let name = ""
+        Object.entries(this).forEach(([key, value]) => {
+            if (value?.isSelected) {
+                name = key
+            }
+        })
+        return name
+    }
+
     setImage(img: HTMLImageElement) {
         this.canvas.getContext('2d').drawImage(img, 0, 0, this.canvas.width, this.canvas.height)
     }

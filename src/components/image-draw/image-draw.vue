@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onMounted, reactive, ref} from "vue";
+import {computed, onMounted, reactive, ref, watch} from "vue";
 import {Sheet} from "./models/Sheet";
 import Shirt from "./../../assets/shirt.png"
 
@@ -62,11 +62,14 @@ onMounted(() => {
 
 const selectPen = () => {
   sheet.selectTool('pen')
+  isSelectedCircle.value = false
+  isSelectedPen.value = true
 }
 
 const selectCircle = () => {
   sheet.selectTool('circle')
-  sheet.circle.isSelected
+  isSelectedCircle.value = true
+  isSelectedPen.value = false
 }
 
 const setCircleColor = (e: any) => {
@@ -77,13 +80,9 @@ const setPenColor = (e: any) => {
   sheet.pen.color = e.target.value
 }
 
-const isSelectedCircle = computed(() => {
-  return sheet.circle.isSelected
-})
+const isSelectedCircle = ref(false)
 
-const isSelectedPen = computed(() => {
-  return sheet.pen.isSelected
-})
+const isSelectedPen = ref(false)
 </script>
 
 <style lang="scss" scoped>
