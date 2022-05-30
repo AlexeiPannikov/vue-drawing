@@ -6,30 +6,20 @@
 
     <div class="toolbar flex-grow-0 ml-8">
 
-      <div class="tool-wrap">
-        <div class="tool-icon circle" @click="selectCircle" :class="{selected: isSelectedCircle}"></div>
-        <div class="color-box" :style="{backgroundColor: circleColor}"
-             @click="isOpenCircleColorPicker = true" v-click-outside="() => {isOpenCircleColorPicker = false}">
-          <div class="color-picker-wrap position-absolute" v-show="isOpenCircleColorPicker">
-            <v-color-picker v-model="circleColor" mode="hex"></v-color-picker>
-          </div>
-        </div>
+      <div class="tool-wrap d-flex align-center">
+        <div class="tool-icon circle mr-3" @click="selectCircle"></div>
+        <input v-model="sheet.circle.color" @change="setCircleColor" class="color-input" type="color">
       </div>
 
       <div class="tool-wrap mt-4">
         <div class="tool-icon rectangle"></div>
       </div>
 
-      <div class="tool-wrap mt-4 position-relative">
-        <div class="tool-icon pen" @click="selectPen" :class="{selected: isSelectedPen}">
+      <div class="tool-wrap mt-4 position-relative d-flex align-center">
+        <div class="tool-icon pen mr-3" @click="selectPen">
           <v-icon color="white">mdi-pen</v-icon>
         </div>
-        <div class="color-box" :style="{backgroundColor: penColor}"
-             @click="isOpenPenColorPicker = true" v-click-outside="() => {isOpenPenColorPicker = false}">
-          <div class="color-picker-wrap position-absolute" v-show="isOpenPenColorPicker">
-            <v-color-picker v-model="penColor" mode="hex"></v-color-picker>
-          </div>
-        </div>
+        <input v-model="sheet.pen.color" @change="setPenColor" class="color-input" type="color">
       </div>
 
       <div class="tool-wrap mt-4">
@@ -43,76 +33,49 @@
 </template>
 
 <script lang="ts" setup>
-
-import {computed, onMounted, reactive, ref, watch} from "vue";
-import {CanvasModel} from "./models/CanvasModel";
+import {computed, onMounted, reactive, ref} from "vue";
+import {Sheet} from "./models/Sheet";
 import Shirt from "./../../assets/shirt.png"
 
 const canvasWrap = ref(null)
 const canvas = ref<HTMLCanvasElement>(null)
 
-const isOpenPenColorPicker = ref(false)
-const isOpenCircleColorPicker = ref(false)
-
-let sheet = reactive<CanvasModel>(new CanvasModel(canvas.value))
+let sheet = reactive<Sheet>(new Sheet(canvas.value))
 
 const setCanvasSize = () => {
-  sheet.setCanvasSize(canvasWrap.value.getBoundingClientRect().width, canvasWrap.value.getBoundingClientRect().height)
+  canvas.value.width = canvasWrap.value.getBoundingClientRect().width
+  canvas.value.height = canvasWrap.value.getBoundingClientRect().height
 }
 
-
 onMounted(() => {
-  canvas.value.style.display = "block"
-  sheet = reactive(new CanvasModel(canvas.value))
-
   setCanvasSize()
-  sheet.setImage(Shirt)
-
+  sheet = reactive(new Sheet(canvas.value))
+  const img = new Image(canvas.value.width, canvas.value.height)
+  img.src = Shirt
+  img.onload = () => {
+    sheet.setImage(img)
+  }
   window.addEventListener('resize', () => {
     setCanvasSize();
   })
 
-  canvas.value.addEventListener('mousedown', (e) => {
-    sheet.start(e)
-  })
-  canvas.value.addEventListener('touchstart', (e) => {
-    sheet.start(e)
-  })
-  canvas.value.addEventListener('mousemove', (e) => {
-    sheet.draw(e)
-  })
-  canvas.value.addEventListener('touchmove', (e) => {
-    sheet.draw(e)
-  })
-
-  document.addEventListener('mouseup', (e) => sheet.stop(e))
-  document.addEventListener('touchend', (e) => sheet.stop(e))
-  canvas.value.addEventListener('mouseout', (e) => sheet.stop(e))
 })
 
 const selectPen = () => {
   sheet.selectTool('pen')
-  isSelectedPen.value = sheet.tools.pen.isSelected
 }
 
 const selectCircle = () => {
   sheet.selectTool('circle')
-  isSelectedCircle.value = sheet.tools.circle.isSelected
 }
 
-const isSelectedPen = ref(false)
-const isSelectedCircle = ref(false)
+const setCircleColor = (e: any) => {
+  sheet.circle.color = e.target.value
+}
 
-const penColor = ref(sheet?.tools.pen.color)
-const circleColor = ref(sheet?.tools.circle.color)
-
-watch(penColor, () => {
-  sheet.tools.pen.color = penColor.value
-})
-
-watch(circleColor, () => {
-  sheet.tools.circle.shape.stroke.fill = circleColor.value
-})
+const setPenColor = (e: any) => {
+  sheet.pen.color = e.target.value
+}
 </script>
 
 <style lang="scss" scoped>
@@ -172,20 +135,11 @@ watch(circleColor, () => {
     display: none;
   }
 
-  .color-box {
-    position: relative;
-    width: 41px;
-    height: 41px;
-    margin-left: 16px;
-    border-radius: 4px;
-    border: 5px solid #312f30;
-    box-shadow: 0px 0px 7px 1px #312f30;
-    cursor: pointer;
-  }
-
-  .color-picker-wrap {
-    left: 60px;
-    z-index: 100;
+  .color-input {
+    border: 4px solid black;
+    width: 40px;
+    height: 40px;
+    padding: 1px 2px;
   }
 }
 </style>
