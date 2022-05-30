@@ -7,7 +7,7 @@
     <div class="toolbar flex-grow-0 ml-8">
 
       <div class="tool-wrap d-flex align-center">
-        <div class="tool-icon circle mr-3" @click="selectCircle"></div>
+        <div class="tool-icon circle mr-3" @click="selectCircle" :class="{selected: isSelectedCircle}"></div>
         <input v-model="sheet.circle.color" @change="setCircleColor" class="color-input" type="color">
       </div>
 
@@ -16,7 +16,7 @@
       </div>
 
       <div class="tool-wrap mt-4 position-relative d-flex align-center">
-        <div class="tool-icon pen mr-3" @click="selectPen">
+        <div class="tool-icon pen mr-3" @click="selectPen" :class="{selected: isSelectedPen}">
           <v-icon color="white">mdi-pen</v-icon>
         </div>
         <input v-model="sheet.pen.color" @change="setPenColor" class="color-input" type="color">
@@ -58,7 +58,6 @@ onMounted(() => {
   window.addEventListener('resize', () => {
     setCanvasSize();
   })
-
 })
 
 const selectPen = () => {
@@ -67,6 +66,7 @@ const selectPen = () => {
 
 const selectCircle = () => {
   sheet.selectTool('circle')
+  sheet.circle.isSelected
 }
 
 const setCircleColor = (e: any) => {
@@ -76,6 +76,14 @@ const setCircleColor = (e: any) => {
 const setPenColor = (e: any) => {
   sheet.pen.color = e.target.value
 }
+
+const isSelectedCircle = computed(() => {
+  return sheet.circle.isSelected
+})
+
+const isSelectedPen = computed(() => {
+  return sheet.pen.isSelected
+})
 </script>
 
 <style lang="scss" scoped>
