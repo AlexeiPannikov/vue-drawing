@@ -7,8 +7,8 @@
     <div class="toolbar flex-grow-0 ml-8">
 
       <div class="tool-wrap d-flex align-center">
-        <div class="tool-icon circle mr-3" @click="selectCircle" :class="{selected: isSelectedCircle}"></div>
-        <input v-model="sheet.circle.color" @change="setCircleColor" class="color-input" type="color">
+        <div class="tool-icon circle mr-3" @click="selectCircle" :class="{selected: sheet.circle.isSelected}"></div>
+        <input v-model="sheet.circle.color" class="color-input" type="color">
       </div>
 
       <div class="tool-wrap mt-4">
@@ -16,16 +16,21 @@
       </div>
 
       <div class="tool-wrap mt-4 position-relative d-flex align-center">
-        <div class="tool-icon pen mr-3" @click="selectPen" :class="{selected: isSelectedPen}">
+        <div class="tool-icon pen mr-3" @click="selectPen" :class="{selected: sheet.pen.isSelected}">
           <v-icon color="white">mdi-pen</v-icon>
         </div>
-        <input v-model="sheet.pen.color" @change="setPenColor" class="color-input" type="color">
+        <input v-model="sheet.pen.color" class="color-input" type="color">
       </div>
 
       <div class="tool-wrap mt-4">
         <div class="tool-icon text">
           <v-icon color="white">mdi-text-shadow</v-icon>
         </div>
+      </div>
+
+      <div class="tool-wrap mt-4 d-flex">
+        <v-btn @click="undo" :disabled="!sheet.undoList.length" icon="mdi-arrow-left" class="mr-3"></v-btn>
+        <v-btn @click="redo" :disabled="!sheet.redoList.length" icon="mdi-arrow-right"></v-btn>
       </div>
 
     </div>
@@ -40,7 +45,7 @@ import Shirt from "./../../assets/shirt.png"
 const canvasWrap = ref(null)
 const canvas = ref<HTMLCanvasElement>(null)
 
-let sheet = reactive<Sheet>(new Sheet(canvas.value))
+const sheet = reactive<Sheet>(new Sheet(canvas.value))
 
 const setCanvasSize = () => {
   canvas.value.width = canvasWrap.value.getBoundingClientRect().width
@@ -49,7 +54,7 @@ const setCanvasSize = () => {
 
 onMounted(() => {
   setCanvasSize()
-  sheet = reactive(new Sheet(canvas.value))
+  sheet.initTools(canvas.value)
   const img = new Image(canvas.value.width, canvas.value.height)
   img.src = Shirt
   img.onload = () => {
@@ -58,31 +63,28 @@ onMounted(() => {
   window.addEventListener('resize', () => {
     setCanvasSize();
   })
+  document.addEventListener('mousedown', (e: any) => {
+    if (e.target.contains(canvas.value)) {
+      sheet.saveCanvasState()
+    }
+  })
 })
 
 const selectPen = () => {
   sheet.selectTool('pen')
-  isSelectedCircle.value = false
-  isSelectedPen.value = true
 }
 
 const selectCircle = () => {
   sheet.selectTool('circle')
-  isSelectedCircle.value = true
-  isSelectedPen.value = false
 }
 
-const setCircleColor = (e: any) => {
-  sheet.circle.color = e.target.value
+const undo = () => {
+  sheet.undo()
 }
 
-const setPenColor = (e: any) => {
-  sheet.pen.color = e.target.value
+const redo = () => {
+  sheet.redo()
 }
-
-const isSelectedCircle = ref(false)
-
-const isSelectedPen = ref(false)
 </script>
 
 <style lang="scss" scoped>

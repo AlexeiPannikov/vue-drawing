@@ -12,33 +12,48 @@ export class Circle extends Tool {
     }
 
     listen() {
-        if(!this.isSelected) return
-        this.canvas.onmousedown = this.mouseDownHandler.bind(this)
-        this.canvas.onmousemove = this.mouseMoveHandler.bind(this)
-        this.canvas.onmouseup = this.mouseUpHandler.bind(this)
-        this.canvas.onmouseleave = this.mouseUpHandler.bind(this)
+        if (!this.isSelected) return
+        this.canvas.onmousedown = this.start.bind(this)
+        this.canvas.ontouchstart = this.start.bind(this)
+        this.canvas.onmousemove = this.move.bind(this)
+        this.canvas.ontouchmove = this.move.bind(this)
+        this.canvas.onmouseup = this.stop.bind(this)
+        this.canvas.ontouchend = this.stop.bind(this)
+        this.canvas.onmouseleave = this.stop.bind(this)
+        this.canvas.ontouchcancel = this.stop.bind(this)
     }
 
-    mouseDownHandler(e: MouseEvent) {
+    start(e: MouseEvent | TouchEvent) {
         this.isMouseDown = true
         this.ctx.beginPath()
         this.ctx.strokeStyle = this.color
-        this.startX = e.pageX - (e.target as any).offsetLeft
-        this.startY = e.pageY - (e.target as any).offsetTop
+        if (e instanceof MouseEvent) {
+            this.startX = e.pageX - (e.target as any).offsetLeft
+            this.startY = e.pageY - (e.target as any).offsetTop
+        }
+        if (e instanceof TouchEvent) {
+            this.startX = e.changedTouches[0].pageX - (e.target as any).offsetLeft
+            this.startY = e.changedTouches[0].pageY - (e.target as any).offsetTop
+        }
         this.saved = this.canvas.toDataURL()
     }
 
-    mouseMoveHandler(e: MouseEvent) {
-        if (this.isMouseDown) {
-            let radius = e.pageX - (e.target as any).offsetLeft - this.startX
-            if (radius <= 0) {
-                radius = Math.abs(radius)
-            }
-            this.draw(this.startX, this.startY, radius)
+    move(e: MouseEvent | TouchEvent) {
+        if (!this.isMouseDown) return
+        let radius
+        if (e instanceof MouseEvent) {
+            radius = e.pageX - (e.target as any).offsetLeft - this.startX
         }
+        if (e instanceof TouchEvent) {
+            radius = e.changedTouches[0].pageX - (e.target as any).offsetLeft - this.startX
+        }
+        if (radius <= 0) {
+            radius = Math.abs(radius)
+        }
+        this.draw(this.startX, this.startY, radius)
     }
 
-    mouseUpHandler(e: MouseEvent) {
+    stop() {
         this.isMouseDown = false
     }
 
