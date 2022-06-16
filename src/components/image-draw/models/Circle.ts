@@ -2,6 +2,7 @@ import {Tool} from "./Tool";
 
 export class Circle extends Tool {
 
+    name = "circle"
     isMouseDown: boolean = false
     private startX: number = null
     private startY: number = null
@@ -28,8 +29,8 @@ export class Circle extends Tool {
         this.ctx.beginPath()
         this.ctx.strokeStyle = this.color
         if (e instanceof MouseEvent) {
-            this.startX = e.pageX - (e.target as any).offsetLeft
-            this.startY = e.pageY - (e.target as any).offsetTop
+            this.startX = e.pageX - (e.target as HTMLElement).getBoundingClientRect().left
+            this.startY = e.pageY - (e.target as HTMLElement).getBoundingClientRect().top
         }
         if (e instanceof TouchEvent) {
             this.startX = e.changedTouches[0].pageX - (e.target as any).offsetLeft
@@ -42,10 +43,10 @@ export class Circle extends Tool {
         if (!this.isMouseDown) return
         let radius
         if (e instanceof MouseEvent) {
-            radius = e.pageX - (e.target as any).offsetLeft - this.startX
+            radius = e.pageX - (e.target as HTMLElement).getBoundingClientRect().left - this.startX
         }
         if (e instanceof TouchEvent) {
-            radius = e.changedTouches[0].pageX - (e.target as any).offsetLeft - this.startX
+            radius = e.changedTouches[0].pageX - (e.target as HTMLElement).getBoundingClientRect().left - this.startX
         }
         if (radius <= 0) {
             radius = Math.abs(radius)

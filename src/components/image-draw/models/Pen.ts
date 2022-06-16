@@ -2,6 +2,7 @@ import {Tool} from "./Tool";
 
 export class Pen extends Tool {
 
+    name = "pen"
     isMouseDown: boolean = false
 
     constructor(canvas: HTMLCanvasElement) {
@@ -25,7 +26,7 @@ export class Pen extends Tool {
         this.ctx.beginPath()
         this.ctx.strokeStyle = this.color
         if (e instanceof MouseEvent) {
-            this.ctx.moveTo(e.pageX - (e.target as any).offsetLeft, e.pageY - (e.target as any).offsetTop)
+            this.ctx.moveTo(e.pageX - (e.target as HTMLElement).getBoundingClientRect().left, e.pageY - (e.target as HTMLElement).getBoundingClientRect().top)
         }
         if (e instanceof TouchEvent) {
             this.ctx.moveTo(e.changedTouches[0].pageX - (e.target as any).offsetLeft, e.changedTouches[0].pageY - (e.target as any).offsetTop)
@@ -35,10 +36,11 @@ export class Pen extends Tool {
     move(e: MouseEvent | TouchEvent) {
         if (!this.isMouseDown) return
         if (e instanceof MouseEvent) {
-            this.draw(e.pageX - (e.target as any).offsetLeft, e.pageY - (e.target as any).offsetTop)
+            this.draw(e.pageX - (e.target as HTMLElement).getBoundingClientRect().left, e.pageY - (e.target as HTMLElement).getBoundingClientRect().top)
+            console.log(e.pageX, (e.target as any).offsetLeft)
         }
         if (e instanceof TouchEvent) {
-            this.draw(e.changedTouches[0].pageX - (e.target as any).offsetLeft, e.changedTouches[0].pageY - (e.target as any).offsetTop)
+            this.draw(e.changedTouches[0].pageX - (e.target as HTMLElement).getBoundingClientRect().left, (e.target as HTMLElement).getBoundingClientRect().top)
         }
     }
 

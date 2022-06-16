@@ -1,10 +1,21 @@
 <template>
-  <div class="draw-wrap d-flex">
-    <div class="canvas-wrap flex-grow-1" ref="canvasWrap">
+  <div class="draw-wrap d-flex position-fixed">
+    <div class="canvas-wrap" ref="canvasWrap" :style="{width: '640px', height: '920px'}">
       <canvas id="canvas" ref="canvas"></canvas>
+      <!--      <div class="scale-buttons">-->
+      <!--        <img :src="MagnifierMinus" class="mr-2" @click="sheet.decreaseCanvasScale"/>-->
+      <!--        <img :src="MagnifierPlus" @click="sheet.increaseCanvasScale"/>-->
+      <!--      </div>-->
+      <textarea v-show="sheet.text.isOpenInput"
+                class="text-input"
+                ref="textInput"
+                autofocus
+                :style="{left: sheet.text.x + 'px', top: sheet.text.y + 'px', color: sheet.text.color, borderColor: sheet.text.color}"
+                v-model="sheet.text.text"
+      />
     </div>
 
-    <div class="toolbar flex-grow-0 ml-8">
+    <div class="toolbar flex-grow-1 ml-8">
 
       <div class="tool-wrap d-flex align-center">
         <div class="tool-icon circle mr-3" @click="selectCircle" :class="{selected: sheet.circle.isSelected}"></div>
@@ -23,9 +34,10 @@
       </div>
 
       <div class="tool-wrap mt-4">
-        <div class="tool-icon text">
+        <div class="tool-icon text mr-3" @click="selectText" :class="{selected: sheet.text.isSelected}">
           <v-icon color="white">mdi-text-shadow</v-icon>
         </div>
+        <input v-model="sheet.text.color" class="color-input" type="color">
       </div>
 
       <div class="tool-wrap mt-4 d-flex">
@@ -33,38 +45,44 @@
         <v-btn @click="redo" :disabled="!sheet.redoList.length" icon="mdi-arrow-right"></v-btn>
       </div>
 
+      <textarea v-model="comment" class="mt-4 comment-input"></textarea>
+      <button class="insert mt-3" @click="acceptChanges">INSERT</button>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import {computed, onMounted, reactive, ref, watch} from "vue";
+import {defineProps, onMounted, reactive, ref} from "vue";
 import {Sheet} from "./models/Sheet";
-import Shirt from "./../../assets/shirt.png"
+import MagnifierPlus from "./../../assets/icons/magnifier-plus.svg"
+import MagnifierMinus from "./../../assets/icons/magnifier-minus.svg"
+import {watch} from "vue";
 
-const canvasWrap = ref(null)
-const canvas = ref<HTMLCanvasElement>(null)
-
-const sheet = reactive<Sheet>(new Sheet(canvas.value))
-
-const setCanvasSize = () => {
-  canvas.value.width = canvasWrap.value.getBoundingClientRect().width
-  canvas.value.height = canvasWrap.value.getBoundingClientRect().height
+interface IProps {
+  img: string
 }
 
+const props = withDefaults(defineProps<IProps>(), {})
+
+const emits = defineEmits<{
+  (e: "acceptChanges", data: { comment: string, dataUrl: string }): void
+}>()
+
+const canvas = ref<HTMLCanvasElement>(null)
+const canvasWrap = ref(null)
+const textInput = ref(null)
+const comment = ref("")
+const sheet = reactive<Sheet>(new Sheet(canvas.value))
+
 onMounted(() => {
-  setCanvasSize()
-  sheet.initTools(canvas.value)
-  const img = new Image(canvas.value.width, canvas.value.height)
-  img.src = Shirt
-  img.onload = () => {
-    sheet.setImage(img)
+  const image = new Image()
+  image.src = props.img
+  image.onload = () => {
+    sheet.init(canvas.value, canvasWrap.value.getBoundingClientRect().width, canvasWrap.value.getBoundingClientRect().height)
+    sheet.setImage(image)
   }
-  window.addEventListener('resize', () => {
-    setCanvasSize();
-  })
   document.addEventListener('mousedown', (e: any) => {
-    if (e.target.contains(canvas.value)) {
+    if ((e.target.contains(canvas.value) || sheet.text.text) && sheet.isHasSelectedTool) {
       sheet.saveCanvasState()
     }
   })
@@ -78,6 +96,10 @@ const selectCircle = () => {
   sheet.selectTool('circle')
 }
 
+const selectText = () => {
+  sheet.selectTool('text')
+}
+
 const undo = () => {
   sheet.undo()
 }
@@ -85,20 +107,64 @@ const undo = () => {
 const redo = () => {
   sheet.redo()
 }
+
+watch(() => sheet.text.isOpenInput, () => {
+  if (sheet.text.isOpenInput) {
+    textInput.value.focus()
+  }
+})
+
+const acceptChanges = () => {
+  emits('acceptChanges', {comment: comment.value, dataUrl: sheet.result})
+}
 </script>
 
 <style lang="scss" scoped>
 .draw-wrap {
-  max-height: 600px;
   height: 100%;
+  position: fixed;
+  left: 0;
+  top: 30px;
+  background-color: white;
 }
 
 .canvas-wrap {
   border: 1px solid black;
   max-width: 550px;
   max-height: 600px;
-  height: 100%;
-  width: 100%;
+  overflow: hidden;
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .text-input {
+    position: fixed;
+    border: 1px dashed black;
+  }
+
+  .scale-buttons {
+    left: 10px;
+    bottom: 10px;
+    height: 25px;
+    display: flex;
+    position: absolute;
+
+    img {
+      opacity: 0.5;
+      cursor: pointer;
+      transition: all 0.1s linear;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      &:active {
+        transform: scale(0.8);
+      }
+    }
+  }
 }
 
 .tool-wrap {
@@ -150,5 +216,21 @@ const redo = () => {
     height: 40px;
     padding: 1px 2px;
   }
+}
+
+.comment-input {
+  border: 1px solid #312f30;
+  border-radius: 4px;
+  max-height: 200px !important;
+  max-width: 400px;
+  width: 100%;
+  padding: 15px;
+}
+
+.insert {
+  background-color: #312f30;
+  padding: 10px 20px;
+  color: white;
+  border-radius: 4px;
 }
 </style>
