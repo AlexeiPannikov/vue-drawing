@@ -13,7 +13,7 @@
       <div>{{comment}}</div>
     </div>
 
-    <div v-if="selectedImg" style="width: 100vw; height: 100vh; top: 30px; left: 0">
+    <div v-if="selectedImg" style="width: 100%; height: 100%">
       <image-draw :img="selectedImg" @accept-changes="setReturnedImage"></image-draw>
     </div>
   </div>

@@ -29,7 +29,7 @@ export class Pen extends Tool {
             this.ctx.moveTo(e.pageX - (e.target as HTMLElement).getBoundingClientRect().left, e.pageY - (e.target as HTMLElement).getBoundingClientRect().top)
         }
         if (e instanceof TouchEvent) {
-            this.ctx.moveTo(e.changedTouches[0].pageX - (e.target as any).offsetLeft, e.changedTouches[0].pageY - (e.target as any).offsetTop)
+            this.ctx.moveTo(e.changedTouches[0].pageX - (e.target as HTMLElement).getBoundingClientRect().left, e.changedTouches[0].pageY - (e.target as HTMLElement).getBoundingClientRect().top)
         }
     }
 
@@ -40,7 +40,7 @@ export class Pen extends Tool {
             console.log(e.pageX, (e.target as any).offsetLeft)
         }
         if (e instanceof TouchEvent) {
-            this.draw(e.changedTouches[0].pageX - (e.target as HTMLElement).getBoundingClientRect().left, (e.target as HTMLElement).getBoundingClientRect().top)
+            this.draw(e.changedTouches[0].pageX - (e.target as HTMLElement).getBoundingClientRect().left, e.changedTouches[0].pageY - (e.target as HTMLElement).getBoundingClientRect().top)
         }
     }
 

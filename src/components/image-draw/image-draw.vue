@@ -122,7 +122,7 @@ const acceptChanges = () => {
 <style lang="scss" scoped>
 .draw-wrap {
   height: 100%;
-  position: fixed;
+  position: absolute;
   left: 0;
   top: 30px;
   background-color: white;
